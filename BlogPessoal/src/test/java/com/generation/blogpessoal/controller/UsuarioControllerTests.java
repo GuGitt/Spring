@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.generation.blogpessoal.model.Usuario;
+import com.generation.blogpessoal.model.UsuarioLogin;
 import com.generation.blogpessoal.repository.UsuarioRepository;
 import com.generation.blogpessoal.service.UsuarioService;
 
@@ -104,8 +105,8 @@ public class UsuarioControllerTests {
 
 	@Test
 	@Order(4)
-	@DisplayName("Listar todos os Usuários")
-	public void deveMostrarTodosUsuarios() {
+	@DisplayName("Listar todos os Usuários por ID")
+	public void deveRetornarUmId() {
 
 		usuarioService.cadastrarUsuario(new Usuario(0L, 
 			"Sabrina Sanches", "sabrina_sanches@email.com.br", 
@@ -121,5 +122,35 @@ public class UsuarioControllerTests {
 
 		assertEquals(HttpStatus.OK, resposta.getStatusCode());
 	}
+		@Test
+		@Order(5)
+		@DisplayName("Listar Usuário por ID")
+		public void deveMostrarUsuarioDoId() {
+
+			Optional<Usuario> usuario1 = usuarioService.cadastrarUsuario(new Usuario(0L, "Sabrina Sanches2",
+					"sabrina_sanches2@email.com.br", "sabrina2123", "https://i.imgur.com/25M2p5Wb.jpg"));
+
+			ResponseEntity<String> resposta = testRestTemplate.withBasicAuth("root", "root")
+					.exchange("/usuarios/" + usuario1.get().getId(), HttpMethod.GET, null, String.class);
+
+			assertEquals(HttpStatus.OK, resposta.getStatusCode());
+		}
+		
+		@Test
+		@Order(6)
+		@DisplayName("Login do Usuario")
+		public void deveAutenticarUsuario() {
+			
+			usuarioService.cadastrarUsuario(new Usuario(0L, "Jeremi Sampaio",
+					"Jeremi@email.com.br", "Jeremi123", "https://i.imgur.com/Sk5SjWE.jpg"));
+
+			HttpEntity<UsuarioLogin> corpoRequisicao = new HttpEntity<UsuarioLogin>(new UsuarioLogin(0L,"",
+					"Jeremi@email.com.br", "Jeremi123", "", ""));
+
+			ResponseEntity<UsuarioLogin> corpoResposta = testRestTemplate
+					.exchange("/usuarios/logar", HttpMethod.POST, corpoRequisicao, UsuarioLogin.class);
+
+			assertEquals(HttpStatus.OK, corpoResposta.getStatusCode());
+		}
 
 }
